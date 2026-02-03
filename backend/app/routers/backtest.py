@@ -336,7 +336,11 @@ def run_backtest(req: BacktestRequest):
         elif inaction_alpha > 3:
             conclusion = f"Edge defensivo confirmado. El valor real está en la inacción: se evitó un {inaction_alpha:.1f}% de caídas."
         else:
-            conclusion = "Estructura detectada. El algoritmo muestra comportamiento diferenciado y estable respecto al benchmark."
+            # Case: Robust P-Value (<0.05) and Stable, but check Profitability
+            if total_ret < 0:
+                conclusion = "Descorrelación Defensiva (no rentable aún). El algoritmo es coherente y único, pero su ventaja no es suficiente para batir comisiones o tendencias adversas."
+            else:
+                conclusion = "Estructura detectada. El algoritmo muestra comportamiento diferenciado, estable y rentable respecto al benchmark."
 
         # Stress Moment Detective
         worst_dd_idx = drawdown_series.idxmin()

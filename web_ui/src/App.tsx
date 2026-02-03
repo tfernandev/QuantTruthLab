@@ -28,27 +28,39 @@ export default function QuantTruthTerminal() {
     const [loading, setLoading] = useState(false)
     const [result, setResult] = useState<BacktestResult | null>(null)
     const [status, setStatus] = useState<'ONLINE' | 'OFFLINE'>('OFFLINE')
+    const [wakingUp, setWakingUp] = useState(false)
     const [guidedMode, setGuidedMode] = useState(false)
     const [auditMode, setAuditMode] = useState(false)
 
+    const fetchDiscovery = (res: { data: Discovery }) => {
+        setDiscovery(res.data)
+        setStatus('ONLINE')
+        if (res.data.strategies.length > 0) {
+            const s = res.data.strategies[0]
+            const dp = {} as any
+            s.parameters.forEach((p: any) => dp[p.name] = p.default)
+            setConfig((prev: any) => ({
+                ...prev,
+                strategy_id: s.id,
+                scenario_id: res.data.scenarios[0].id,
+                symbol: res.data.available_symbols[0] || 'BTC/USDT',
+                timeframe: '1h',
+                params: dp
+            }))
+        }
+    }
+
     useEffect(() => {
-        axios.get(`${API_URL}/discovery/`).then(res => {
-            setDiscovery(res.data)
-            setStatus('ONLINE')
-            if (res.data.strategies.length > 0) {
-                const s = res.data.strategies[0]
-                const dp = {} as any
-                s.parameters.forEach((p: any) => dp[p.name] = p.default)
-                setConfig({
-                    strategy_id: s.id,
-                    scenario_id: res.data.scenarios[0].id,
-                    symbol: res.data.available_symbols[0] || 'BTC/USDT',
-                    timeframe: '1h',
-                    params: dp
-                })
-            }
-        }).catch(() => setStatus('OFFLINE'))
+        axios.get(`${API_URL}/discovery/`, { timeout: 10000 }).then(fetchDiscovery).catch(() => setStatus('OFFLINE'))
     }, [])
+
+    const wakeUpBackend = () => {
+        setWakingUp(true)
+        axios.get(`${API_URL}/discovery/`, { timeout: 90000 })
+            .then(fetchDiscovery)
+            .catch(() => { /* sigue offline */ })
+            .finally(() => setWakingUp(false))
+    }
 
     const handleStratChange = (id: string) => {
         const s = discovery?.strategies.find(x => x.id === id)
@@ -76,6 +88,7 @@ export default function QuantTruthTerminal() {
             })
             setResult(res.data)
         } catch (e: any) {
+            setStatus('OFFLINE')
             alert(e.response?.data?.detail || "Error en el motor")
         } finally {
             setLoading(false)
@@ -138,8 +151,22 @@ export default function QuantTruthTerminal() {
 
             {/* FLOATING STATUS */}
             <div className="fixed bottom-8 left-8 p-4 bg-slate-900/80 backdrop-blur-3xl border border-white/10 rounded-2xl flex items-center gap-4 shadow-2xl z-50">
-                <div className={`w-3 h-3 rounded-full ${status === 'ONLINE' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
-                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Truth Engine {status === 'ONLINE' ? 'Conectado' : 'Offline'}</span>
+                <div className={`w-3 h-3 rounded-full shrink-0 ${status === 'ONLINE' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                    Truth Engine {status === 'ONLINE' ? 'Conectado' : wakingUp ? 'Despertando...' : 'Offline'}
+                </span>
+                {status === 'OFFLINE' && !wakingUp && (
+                    <button
+                        type="button"
+                        onClick={wakeUpBackend}
+                        className="ml-2 px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500/30 transition-colors"
+                    >
+                        Despertar motor
+                    </button>
+                )}
+                {wakingUp && (
+                    <span className="text-[9px] text-slate-500 italic">(30-60 s)</span>
+                )}
             </div>
         </div>
     )
