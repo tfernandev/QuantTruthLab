@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# Development
+.vscode/
+.idea/
+
+# Environment Variables
+.env
+.env.local
+
+# Web
+node_modules/
+dist/
+build/
+.output/
+
+# Logs
+*.log
+
+# System
+.DS_Store
+Thumbs.db
+
+# ALLOW Data (Explicitly un-ignore processed data for Render file-based DB)
+!data/processed/*.parquet

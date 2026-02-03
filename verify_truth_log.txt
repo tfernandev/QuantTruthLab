@@ -1,0 +1,24 @@
+--- VERIFICACION INDEPENDIENTE DE DATOS (2021) ---
+Conectando con Binance (Data Publica) via CCXT...
+Descargando velas de 1h para BTC/USDT desde 2021-01-01T00:00:00Z...
+
+Total velas descargadas: 9000
+
+DATOS REALES (Binance):
+Precio Inicio (2021-01-01): $28995.13
+Precio Fin    (2021-12-31): $46216.93
+Rendimiento REAL (Buy & Hold): 59.40%
+NOTA: El sistema muestra 59.4%. Si este numero es cercano (57-60%), el simulador tiene datos correctos.
+
+--- SIMULACION RAPIDA DE ESTRATEGIA (10/133) ---
+Estrategia (Long Only) Estimada: 30.69%
+Trades Estimados: ~68
+Max Drawdown Estimado: -36.24%
+
+CONCLUSION:
+[OK] El Benchmark del sistema es muy preciso.
+[INFO] Nuestra simulacion simple da positivo (30.69%).
+   Si el sistema da negativo (-15%), puede ser por:
+   1. Comisiones (Fees) - Nuestra simulacion simple no incluye fees.
+   2. Slippage.
+   3. La logica exacta (quizas cierra posicion tarde).
